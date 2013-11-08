@@ -1,10 +1,34 @@
-Object.prototype.clone = function() { 'use strict';
-    var obj = this.constructor(), key;
-    for(key in this) {
-        if(this.hasOwnProperty(key)) { obj[key] = this[key]; }
+function clone(obj) { 'use strict';
+    if(!obj || typeof obj !== 'object') return obj;
+    var copy;
+    if(obj instanceof Date) {
+        copy = new Date();
+        copy.setTime(obj.getTime());
+        return copy;
     }
-    return obj;
+    if(obj instanceof Array) {
+        copy = [];
+        for(var i = 0, len = obj.length; i < len; i++) {
+            copy[i] = clone(obj[i]);
+        }
+        return copy;
+    }
+    if(obj instanceof Object) {
+        copy = { };
+        for(var attr in obj) {
+            if(obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+        }
+        return copy;
+    }
+    throw new Error("Unable to copy obj! Its type isn't supported.");
 };
+function generateKey(obj) {
+    var key = '';
+    for(var attr in obj) {
+        if(obj.hasOwnProperty(attr)) key += obj[attr];
+    }
+    return key;
+}
 function ArgumentNullOrUndefinedException(name) { 'use strict';
     this.name = name;
     this.message = 'Cannot be null or undefined';
@@ -13,20 +37,22 @@ function ArgumentException(name, message) { 'use strict';
     this.name = name;
     this.message = message;
 }
-(function(array, expect) { 'use strict';
-    array.each = function(selector) {
+(function(expect) {
+    'use strict';
+    var p = Array.prototype;
+    p.each = function(selector) {
         expect.isFunction(selector, 'selector');
         var i;
         for(i = 0; i < this.length; i++) {
             selector(this[i], i);
         }
     };
-    array.aggregate = function(func, seed, selector) {
+    p.aggregate = function(func, seed, selector) {
         expect.isFunction(func, 'func');
         var cloned = [].concat(this), result;
         if(!seed) {
             result = cloned.splice(0, 1)[0];
-            if(typeof result === 'object') { result = result.clone(); }
+            if(typeof result === 'object') { result = clone(result); }
         }
         else {
             expect.is(typeof seed !== 'function', 'seed', 'Cannot be a function');
@@ -36,21 +62,21 @@ function ArgumentException(name, message) { 'use strict';
         cloned.each(function(o) { result = func(result, o); });
         return selector ? selector(result) : result;
     };
-    array.all = function(predicate) {
+    p.all = function(predicate) {
         expect.isFunction(predicate, 'predicate');
         return this.where(predicate).length === this.length;
     };
-    array.any = function(predicate) {
+    p.any = function(predicate) {
         expect.isFunction(predicate, 'predicate');
         return this.where(predicate).length !== 0;
     };
-    array.average = function(selector) { return this.length === 0 ? 0 : this.sum(selector) / this.length; };
-    array.contains = function(obj) {
-		expect.notNullOrUndefined(obj, 'obj');
-		return this.indexOf(obj) !== -1;
-	};
-    array.count = function() { return this.length; };
-    array.distinct = function(selector) {
+    p.average = function(selector) { return this.length === 0 ? 0 : this.sum(selector) / this.length; };
+    p.contains = function(obj) {
+        expect.notNullOrUndefined(obj, 'obj');
+        return this.indexOf(obj) !== -1;
+    };
+    p.count = function() { return this.length; };
+    p.distinct = function(selector) {
         expect.isFunction(selector, 'selector', true);
         var array = [], values = [];
         this.each(function(o) {
@@ -62,34 +88,34 @@ function ArgumentException(name, message) { 'use strict';
         });
         return array;
     };
-    array.first = function(predicate) {
+    p.first = function(predicate) {
         expect.isFunction(predicate, 'predicate', true);
         return (predicate ? this.where(predicate) : this)[0];
     };
-    array.groupBy = function(key, element, result){
+    p.groupBy = function(key, element, result) {
         expect.isFunction(key, 'key');
         expect.isFunction(element, 'element', true);
         expect.isFunction(result, 'result', true);
         var array = [], $ = {};
-        this.each(function(o){
-            var k = key(o), i = $[k];
-            if(!i) { array.push($[k] = i = []) }
+        this.each(function(o) {
+            var k = key(o), g = generateKey(k), i = $[g || k];
+            if(!i) { array.push($[g || k] = i = []); }
             i.key = k;
             i.push(element ? element(o) : o);
         });
-        if(result){
-            array.each(function(o, i){
+        if(result) {
+            array.each(function(o, i) {
                 array[i] = result(o.key, o);
             });
         }
         return array;
     };
-    array.last = function(predicate) {
+    p.last = function(predicate) {
         expect.isFunction(predicate, 'predicate', true);
         var array = predicate ? this.where(predicate) : this;
         return array[array.length - 1];
     };
-    array.max = function(selector) {
+    p.max = function(selector) {
         expect.isFunction(selector, 'selector', true);
         var max = Number.MIN_VALUE;
         (selector ? this.select(selector) : this).each(function(v) {
@@ -98,7 +124,7 @@ function ArgumentException(name, message) { 'use strict';
         });
         return max;
     };
-    array.min = function(selector) {
+    p.min = function(selector) {
         expect.isFunction(selector, 'selector', true);
         var min = Number.MAX_VALUE;
         (selector ? this.select(selector) : this).each(function(v) {
@@ -107,7 +133,7 @@ function ArgumentException(name, message) { 'use strict';
         });
         return min;
     };
-    array.orderBy = function(selector) {
+    p.orderBy = function(selector) {
         expect.isFunction(selector, 'selector');
         var array = [].concat(this), i, v;
         array.sort(function(a, b) {
@@ -124,17 +150,17 @@ function ArgumentException(name, message) { 'use strict';
         });
         return array;
     };
-    array.orderByDescending = function(selector) {
+    p.orderByDescending = function(selector) {
         expect.isFunction(selector, 'selector');
         return this.orderBy(selector).reverse();
     };
-    array.select = function(selector) {
+    p.select = function(selector) {
         expect.isFunction(selector, 'selector');
         var array = [];
         this.each(function(o, i) { array.push(selector(o, i)); });
         return array;
     };
-    array.selectMany = function(collection, result) {
+    p.selectMany = function(collection, result) {
         expect.isFunction(collection, 'collection');
         expect.isFunction(result, 'result', true);
         var array = [];
@@ -148,12 +174,12 @@ function ArgumentException(name, message) { 'use strict';
         });
         return array;
     };
-    array.skip = function(count) {
+    p.skip = function(count) {
         expect.notNullOrUndefined(count, 'count');
         expect.is(typeof count === 'number', 'count', 'Must be a number');
         return this.slice(count);
     };
-    array.skipWhile = function(predicate) {
+    p.skipWhile = function(predicate) {
         expect.isFunction(predicate, 'predicate');
         var array = [], skip = true, i;
         for(i = 0; i < this.length; i++) {
@@ -163,7 +189,7 @@ function ArgumentException(name, message) { 'use strict';
         }
         return array;
     };
-    array.sum = function(selector) {
+    p.sum = function(selector) {
         expect.isFunction(selector, 'selector', true);
         var sum = 0;
         (selector ? this.select(selector) : this).each(function(v) {
@@ -172,12 +198,12 @@ function ArgumentException(name, message) { 'use strict';
         });
         return sum;
     };
-    array.take = function(count) {
+    p.take = function(count) {
         expect.notNullOrUndefined(count, 'count');
         expect.is(typeof count === 'number', 'count', 'Must be a number');
         return this.slice(0, count);
     };
-    array.takeWhile = function(predicate) {
+    p.takeWhile = function(predicate) {
         expect.isFunction(predicate, 'predicate');
         var array = [], i;
         for(i = 0; i < this.length; i++) {
@@ -186,20 +212,23 @@ function ArgumentException(name, message) { 'use strict';
         }
         return array;
     };
-    array.where = function(predicate) {
+    p.where = function(predicate) {
         expect.isFunction(predicate, 'predicate');
         var array = [];
         this.each(function(o, i) { if(predicate(o, i)) { array.push(o); } });
         return array;
     };
-}(Array.prototype, {
-    is: function(value, name, message) { 'use strict';
+}({
+    is: function(value, name, message) {
+        'use strict';
         if(!value) { throw new ArgumentException(name, message); }
     },
-    notNullOrUndefined: function(obj, name) { 'use strict';
+    notNullOrUndefined: function(obj, name) {
+        'use strict';
         if(obj === null || obj === undefined) { throw new ArgumentNullOrUndefinedException(name); }
     },
-    isFunction: function(obj, name, nullable) { 'use strict';
+    isFunction: function(obj, name, nullable) {
+        'use strict';
         if(nullable) {
             if(obj === null || obj === undefined) { return; }
         } else { this.notNullOrUndefined(obj, name); }

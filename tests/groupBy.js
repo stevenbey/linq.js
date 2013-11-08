@@ -18,3 +18,5 @@ assert.equals(grouped[0].key, 1, 'groupBy: with key selector (key)');
 assert.equals(test.groupBy(function(v) { return v.x; }, function(v) { return v.a; })[0][0], "abd", 'groupBy: with key selector and element selector')
 
 assert.equals(test.groupBy(function(v) { return v.x; }, function(v) { return v.a; }, function(k, a) { return { value: k * a.length }; })[0].value, 2, 'groupBy: with key selector, element selector and result selector')
+
+assert.equals(test.groupBy(function(v) { return { z: v.z, b: v.b } }).length, 2, 'groupBy: with complex key')
