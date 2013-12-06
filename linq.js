@@ -22,12 +22,12 @@ function clone(obj) { 'use strict';
     }
     throw new Error("Unable to copy obj! Its type isn't supported.");
 };
-function generateKey(obj) {
-    var key = '';
+function generateHash(obj) {
+    var hash = '';
     for(var attr in obj) {
-        if(obj.hasOwnProperty(attr)) key += obj[attr];
+        if(obj.hasOwnProperty(attr)) hash += obj[attr];
     }
-    return key;
+    return hash;
 }
 function ArgumentNullOrUndefinedException(name) { 'use strict';
     this.name = name;
@@ -98,7 +98,7 @@ function ArgumentException(name, message) { 'use strict';
         expect.isFunction(result, 'result', true);
         var array = [], $ = {};
         this.each(function(o) {
-            var k = key(o), g = generateKey(k), i = $[g || k];
+            var k = key(o), g = generateHash(k), i = $[g || k];
             if(!i) { array.push($[g || k] = i = []); }
             i.key = k;
             i.push(element ? element(o) : o);
@@ -139,6 +139,10 @@ function ArgumentException(name, message) { 'use strict';
         array.sort(function(a, b) {
             a = selector(a);
             b = selector(b);
+			if(typeof a === 'object') {
+				a = generateHash(a);
+				b = generateHash(b);
+			}
             if(typeof a === 'string') {
                 for(i = 0; i < a.length; i++) {
                     v = a.charCodeAt(i) - b.charCodeAt(i);
