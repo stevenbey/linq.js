@@ -22,10 +22,10 @@ function clone(obj) { 'use strict';
     }
     throw new Error("Unable to copy obj! Its type isn't supported.");
 };
-function generateHash(obj) {
+function generateHash(obj) { 'use strict';
     var hash = '';
     for(var attr in obj) {
-        if(obj.hasOwnProperty(attr)) hash += obj[attr];
+        if(obj.hasOwnProperty(attr)) hash += (obj[attr] || '');
     }
     return hash;
 }
