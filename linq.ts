@@ -30,7 +30,7 @@ var generateHash = (obj: any) => {
         for (var attr in obj) if (obj.hasOwnProperty(attr)) hash += generateHash(obj[attr]) || "";
         return hash;
     }
-    return obj.toString();
+    return obj ? obj.toString() : "";
 };
 Array.prototype.aggregate = function (func: (accumulator: any, value: any) => any, seed?: any, selector?: (result: any) => any) {
     if (!this.length) throw "Sequence contains no elements";

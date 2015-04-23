@@ -36,7 +36,7 @@ var generateHash = function (obj) {
                 hash += generateHash(obj[attr]) || "";
         return hash;
     }
-    return obj.toString();
+    return obj ? obj.toString() : "";
 };
 Array.prototype.aggregate = function (func, seed, selector) {
     if (!this.length)
