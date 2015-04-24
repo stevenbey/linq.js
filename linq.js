@@ -60,10 +60,6 @@ Array.prototype.average = function (selector) {
     return this.sum(selector) / this.length;
 };
 Array.prototype.contains = function (item) {
-    if (typeof item == "object") {
-        var hashed = generateHash(item);
-        return this.any(function (i) { return generateHash(i) === hashed; });
-    }
     return this.indexOf(item) !== -1;
 };
 Array.prototype.distinct = function (selector) {
