@@ -49,7 +49,11 @@ Array.prototype.average = function (selector?: (item: any) => number) {
     if (!this.length) throw "Sequence contains no elements";
     return this.sum(selector) / this.length;
 };
-Array.prototype.contains = function(item: any) {
+Array.prototype.contains = function (item: any) {
+    if (typeof item == "object") {
+        var hashed = generateHash(item);
+        return this.any(i => generateHash(i) === hashed);
+    }
     return this.indexOf(item) !== -1;
 };
 Array.prototype.distinct = function (selector: (item: any) => any) {
