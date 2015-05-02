@@ -33,9 +33,11 @@ var generateHash = function (obj) {
         var hash = "";
         for (var attr in obj)
             if (obj.hasOwnProperty(attr))
-                hash += generateHash(obj[attr]) || "";
+                hash += generateHash(obj[attr]);
         return hash;
     }
+    if (typeof obj === "string")
+        return obj;
     return obj ? obj.toString() : "";
 };
 Array.prototype.aggregate = function (func, seed, selector) {

@@ -27,9 +27,10 @@ var generateHash = (obj: any) => {
     if (obj instanceof Date) return obj.toISOString();
     if (obj instanceof Object) {
         var hash = "";
-        for (var attr in obj) if (obj.hasOwnProperty(attr)) hash += generateHash(obj[attr]) || "";
+        for (var attr in obj) if (obj.hasOwnProperty(attr)) hash += generateHash(obj[attr]);
         return hash;
     }
+    if (typeof obj === "string") return obj;
     return obj ? obj.toString() : "";
 };
 Array.prototype.aggregate = function (func: (accumulator: any, value: any) => any, seed?: any, selector?: (result: any) => any) {
