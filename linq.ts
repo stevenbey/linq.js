@@ -20,7 +20,7 @@
         }
         return copy;
     }
-    throw "Unable to copy obj! Its type isn't supported.";
+    throw new Error("Unable to copy obj! Its type isn't supported.");
 };
 var generateHash = (obj: any) => {
     if (obj instanceof Array) return obj.reduce((accumulator, item) => accumulator + generateHash(item), "");
@@ -33,9 +33,9 @@ var generateHash = (obj: any) => {
     if (typeof obj === "string") return obj;
     return obj ? obj.toString() : "";
 };
-Array.prototype.aggregate = function (func: (accumulator: any, value: any) => any, seed?: any, selector?: (result: any) => any) {
-    if (!this.length) throw "Sequence contains no elements";
-    if (!func) throw "Argument cannot be null. Parameter name: func";
+Array.prototype.aggregate = function (func: (accumulator: any, value: any) => any, seed: any, selector: (result: any) => any) {
+    if (!this.length) throw new Error("Sequence contains no elements");
+    if (!func) throw new Error("Argument cannot be null. Parameter name: func");
     var result = seed || clone(this[0]);
     for (var i = seed ? 0 : 1; i < this.length; i++) result = func(result, this[i]);
     return selector ? selector(result) : result;
@@ -46,8 +46,8 @@ Array.prototype.all = function (predicate: (item: any) => boolean) {
 Array.prototype.any = function (predicate: (item: any) => boolean) {
     return predicate ? this.some(predicate) : !!this.length;
 };
-Array.prototype.average = function (selector?: (item: any) => number) {
-    if (!this.length) throw "Sequence contains no elements";
+Array.prototype.average = function (selector: (item: any) => number) {
+    if (!this.length) throw new Error("Sequence contains no elements");
     return this.sum(selector) / this.length;
 };
 Array.prototype.contains = function (item: any) {
@@ -65,12 +65,12 @@ Array.prototype.distinct = function (selector: (item: any) => any) {
     return result;
 };
 Array.prototype.first = function (predicate: (item: any) => boolean) {
-    if (!this.length) throw "Sequence contains no elements";
+    if (!this.length) throw new Error("Sequence contains no elements");
     var result = predicate ? this.where(predicate) : this;
     return result.length ? result[0] : null;
 };
-Array.prototype.groupBy = function (keySelector: (item: any) => any, elementSelector?: (item: any) => any, resultSelector?: (key: any, array: any[]) => any) {
-    if (!keySelector) throw "Argument cannot be null. Parameter name: keySelector";
+Array.prototype.groupBy = function (keySelector: (item: any) => any, elementSelector: (item: any) => any, resultSelector: (key: any, array: any[]) => any) {
+    if (!keySelector) throw new Error("Argument cannot be null. Parameter name: keySelector");
     var result = [], groups = {};
     this.forEach(item => {
         var key = keySelector(item), hash = generateHash(key), group = groups[hash];
@@ -84,24 +84,24 @@ Array.prototype.groupBy = function (keySelector: (item: any) => any, elementSele
     return result;
 };
 Array.prototype.last = function (predicate: (item: any) => boolean) {
-    if (!this.length) throw "Sequence contains no elements";
+    if (!this.length) throw new Error("Sequence contains no elements");
     var result = predicate ? this.where(predicate) : this;
     return result.length ? result[result.length - 1] : null;
 };
 Array.prototype.max = function (selector: (item: any) => number) {
-    if (!this.length) throw "Sequence contains no elements";
+    if (!this.length) throw new Error("Sequence contains no elements");
     var max = Number.MIN_VALUE;
     (selector ? this.select(selector) : this).forEach(value => { if (value > max) max = value; });
     return max;
 };
 Array.prototype.min = function (selector: (item: any) => number) {
-    if (!this.length) throw "Sequence contains no elements";
+    if (!this.length) throw new Error("Sequence contains no elements");
     var min = Number.MAX_VALUE;
     (selector ? this.select(selector) : this).forEach(value => { if (value < min) min = value; });
     return min;
 };
 Array.prototype.orderBy = function(selector: (item: any) => any) {
-    if (!selector) throw "Argument cannot be null. Parameter name: selector";
+    if (!selector) throw new Error("Argument cannot be null. Parameter name: selector");
     var result = [].concat(this);
     result.sort((a, b) => {
         a = generateHash(selector(a));
@@ -116,7 +116,7 @@ Array.prototype.orderBy = function(selector: (item: any) => any) {
     return result;
 };
 Array.prototype.orderByDescending = function (selector: (item: any) => any) {
-    if (!selector) throw "Argument cannot be null. Parameter name: selector";
+    if (!selector) throw new Error("Argument cannot be null. Parameter name: selector");
     var result = [].concat(this);
     result.sort((a, b) => {
         a = generateHash(selector(a));
@@ -131,11 +131,13 @@ Array.prototype.orderByDescending = function (selector: (item: any) => any) {
     return result;
 };
 Array.prototype.select = function(selector: (item: any, index: number) => any) {
+    if (!selector) throw new Error("Argument cannot be null. Parameter name: selector");
     var result = [];
     this.forEach((item, index) => result.push(selector(item, index)));
     return result;
 };
-Array.prototype.selectMany = function(collectionSelector: (item: any, index: number) => any[], resultSelector?: (item: any, array: any[]) => any) {
+Array.prototype.selectMany = function(collectionSelector: (item: any, index: number) => any[], resultSelector: (item: any, array: any[]) => any) {
+    if (!collectionSelector) throw new Error("Argument cannot be null. Parameter name: collectionSelector");
     var result = [];
     this.forEach((item, index) => {
         var selected = collectionSelector(item, index);
@@ -148,6 +150,7 @@ Array.prototype.skip = function (count: number) {
     return this.slice(count);
 };
 Array.prototype.skipWhile = function (predicate: (item: any, index: number) => boolean) {
+    if (!predicate) throw new Error("Argument cannot be null. Parameter name: predicate");
     var result = [];
     for (var i = 0; i < this.length; i++) {
         var item = this[i];
@@ -157,13 +160,14 @@ Array.prototype.skipWhile = function (predicate: (item: any, index: number) => b
     return result;
 };
 Array.prototype.sum = function (selector: (item: any) => number) {
-    if (!this.length) throw "Sequence contains no elements";
+    if (!this.length) throw new Error("Sequence contains no elements");
     return (selector ? this.select(selector) : this).reduce((accumulator, value) => accumulator + value, 0);
 };
 Array.prototype.take = function(count: number) {
-    return this.slice(0, --count);
+    return this.slice(0, count);
 };
 Array.prototype.takeWhile = function(predicate: (item: any, index: number) => boolean) {
+    if (!predicate) throw new Error("Argument cannot be null. Parameter name: predicate");
     var result = [];
     for (var i = 0; i < this.length; i++) {
         var item = this[i];
@@ -173,6 +177,7 @@ Array.prototype.takeWhile = function(predicate: (item: any, index: number) => bo
     return result;
 };
 Array.prototype.where = function(predicate: (item: any, index: number) => boolean) {
+    if (!predicate) throw new Error("Argument cannot be null. Parameter name: predicate");
     var result = [];
     this.forEach((item, index) => { if (predicate(item, index)) result.push(item); });
     return result;
