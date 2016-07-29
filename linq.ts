@@ -132,9 +132,10 @@ Array.prototype.orderByDescending = function (selector: (item: any) => any) {
 };
 Array.prototype.select = function(selector: (item: any, index: number) => any) {
     if (!selector) throw new Error("Argument cannot be null. Parameter name: selector");
-    var result = [];
-    this.forEach((item, index) => result.push(selector(item, index)));
-    return result;
+    //var result = [];
+    //this.forEach((item, index) => result.push(selector(item, index)));
+    //return result;
+    return this.map(selector);
 };
 Array.prototype.selectMany = function(collectionSelector: (item: any, index: number) => any[], resultSelector: (item: any, array: any[]) => any) {
     if (!collectionSelector) throw new Error("Argument cannot be null. Parameter name: collectionSelector");
@@ -178,7 +179,8 @@ Array.prototype.takeWhile = function(predicate: (item: any, index: number) => bo
 };
 Array.prototype.where = function(predicate: (item: any, index: number) => boolean) {
     if (!predicate) throw new Error("Argument cannot be null. Parameter name: predicate");
-    var result = [];
-    this.forEach((item, index) => { if (predicate(item, index)) result.push(item); });
-    return result;
+    //var result = [];
+    //this.forEach((item, index) => { if (predicate(item, index)) result.push(item); });
+    //return result;
+    return this.filter(predicate);
 };
