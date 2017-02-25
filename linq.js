@@ -1,3 +1,4 @@
+var _this = this;
 var clone = function (obj) {
     if (!obj || typeof obj !== "object")
         return obj;
@@ -41,32 +42,32 @@ var generateHash = function (obj) {
     return obj ? obj.toString() : "";
 };
 Array.prototype.aggregate = function (func, seed, selector) {
-    if (!this.length)
+    if (!_this.length)
         throw new Error("Sequence contains no elements");
     if (!func)
         throw new Error("Argument cannot be null. Parameter name: func");
-    var result = seed || clone(this[0]);
-    for (var i = seed ? 0 : 1; i < this.length; i++)
-        result = func(result, this[i]);
+    var result = seed || clone(_this[0]);
+    for (var i = seed ? 0 : 1; i < _this.length; i++)
+        result = func(result, _this[i]);
     return selector ? selector(result) : result;
 };
 Array.prototype.all = function (predicate) {
-    return predicate ? this.every(predicate) : true;
+    return predicate ? _this.every(predicate) : true;
 };
 Array.prototype.any = function (predicate) {
-    return predicate ? this.some(predicate) : !!this.length;
+    return predicate ? _this.some(predicate) : !!_this.length;
 };
 Array.prototype.average = function (selector) {
-    if (!this.length)
+    if (!_this.length)
         throw new Error("Sequence contains no elements");
-    return this.sum(selector) / this.length;
+    return _this.sum(selector) / _this.length;
 };
 Array.prototype.contains = function (item) {
-    return this.indexOf(item) !== -1;
+    return _this.indexOf(item) !== -1;
 };
 Array.prototype.distinct = function (selector) {
     var result = [], values = [];
-    this.forEach(function (item) {
+    _this.forEach(function (item) {
         var value = selector ? selector(item) : item;
         if (!values.contains(item)) {
             values.push(value);
@@ -76,16 +77,16 @@ Array.prototype.distinct = function (selector) {
     return result;
 };
 Array.prototype.first = function (predicate) {
-    if (!this.length)
+    if (!_this.length)
         throw new Error("Sequence contains no elements");
-    var result = predicate ? this.where(predicate) : this;
+    var result = predicate ? _this.where(predicate) : _this;
     return result.length ? result[0] : null;
 };
 Array.prototype.groupBy = function (keySelector, elementSelector, resultSelector) {
     if (!keySelector)
         throw new Error("Argument cannot be null. Parameter name: keySelector");
     var result = [], groups = {};
-    this.forEach(function (item) {
+    _this.forEach(function (item) {
         var key = keySelector(item), hash = generateHash(key), group = groups[hash];
         if (!group) {
             result.push(groups[hash] = group = []);
@@ -94,41 +95,35 @@ Array.prototype.groupBy = function (keySelector, elementSelector, resultSelector
         group.push(elementSelector ? elementSelector(item) : item);
     });
     if (resultSelector)
-        result.forEach(function (item, index) {
-            result[index] = resultSelector(item.key, item);
-        });
+        result.forEach(function (item, index) { result[index] = resultSelector(item.key, item); });
     return result;
 };
 Array.prototype.last = function (predicate) {
-    if (!this.length)
+    if (!_this.length)
         throw new Error("Sequence contains no elements");
-    var result = predicate ? this.where(predicate) : this;
+    var result = predicate ? _this.where(predicate) : _this;
     return result.length ? result[result.length - 1] : null;
 };
 Array.prototype.max = function (selector) {
-    if (!this.length)
+    if (!_this.length)
         throw new Error("Sequence contains no elements");
     var max = Number.MIN_VALUE;
-    (selector ? this.select(selector) : this).forEach(function (value) {
-        if (value > max)
-            max = value;
-    });
+    (selector ? _this.select(selector) : _this).forEach(function (value) { if (value > max)
+        max = value; });
     return max;
 };
 Array.prototype.min = function (selector) {
-    if (!this.length)
+    if (!_this.length)
         throw new Error("Sequence contains no elements");
     var min = Number.MAX_VALUE;
-    (selector ? this.select(selector) : this).forEach(function (value) {
-        if (value < min)
-            min = value;
-    });
+    (selector ? _this.select(selector) : _this).forEach(function (value) { if (value < min)
+        min = value; });
     return min;
 };
 Array.prototype.orderBy = function (selector) {
     if (!selector)
         throw new Error("Argument cannot be null. Parameter name: selector");
-    var result = [].concat(this);
+    var result = [].concat(_this);
     result.sort(function (a, b) {
         a = generateHash(selector(a));
         b = generateHash(selector(b));
@@ -145,7 +140,7 @@ Array.prototype.orderBy = function (selector) {
 Array.prototype.orderByDescending = function (selector) {
     if (!selector)
         throw new Error("Argument cannot be null. Parameter name: selector");
-    var result = [].concat(this);
+    var result = [].concat(_this);
     result.sort(function (a, b) {
         a = generateHash(selector(a));
         b = generateHash(selector(b));
@@ -162,32 +157,27 @@ Array.prototype.orderByDescending = function (selector) {
 Array.prototype.select = function (selector) {
     if (!selector)
         throw new Error("Argument cannot be null. Parameter name: selector");
-    var result = [];
-    this.forEach(function (item, index) { return result.push(selector(item, index)); });
-    return result;
+    return _this.map(selector);
 };
 Array.prototype.selectMany = function (collectionSelector, resultSelector) {
     if (!collectionSelector)
         throw new Error("Argument cannot be null. Parameter name: collectionSelector");
     var result = [];
-    this.forEach(function (item, index) {
+    _this.forEach(function (item, index) {
         var selected = collectionSelector(item, index);
-        if (resultSelector)
-            result.push(resultSelector(item, selected));
-        else
-            selected.forEach(function (subitem) { return result.push(subitem); });
+        (resultSelector ? result.push(resultSelector(item, selected)) : selected.forEach(function (subitem) { return result.push(subitem); }));
     });
     return result;
 };
 Array.prototype.skip = function (count) {
-    return this.slice(count);
+    return _this.slice(count);
 };
 Array.prototype.skipWhile = function (predicate) {
     if (!predicate)
         throw new Error("Argument cannot be null. Parameter name: predicate");
     var result = [];
-    for (var i = 0; i < this.length; i++) {
-        var item = this[i];
+    for (var i = 0; i < _this.length; i++) {
+        var item = _this[i];
         if (predicate(item, i))
             continue;
         ;
@@ -196,19 +186,19 @@ Array.prototype.skipWhile = function (predicate) {
     return result;
 };
 Array.prototype.sum = function (selector) {
-    if (!this.length)
+    if (!_this.length)
         throw new Error("Sequence contains no elements");
-    return (selector ? this.select(selector) : this).reduce(function (accumulator, value) { return accumulator + value; }, 0);
+    return (selector ? _this.select(selector) : _this).reduce(function (accumulator, value) { return accumulator + value; }, 0);
 };
 Array.prototype.take = function (count) {
-    return this.slice(0, count);
+    return _this.slice(0, count);
 };
 Array.prototype.takeWhile = function (predicate) {
     if (!predicate)
         throw new Error("Argument cannot be null. Parameter name: predicate");
     var result = [];
-    for (var i = 0; i < this.length; i++) {
-        var item = this[i];
+    for (var i = 0; i < _this.length; i++) {
+        var item = _this[i];
         if (!predicate(item, i))
             break;
         result.push(item);
@@ -218,10 +208,5 @@ Array.prototype.takeWhile = function (predicate) {
 Array.prototype.where = function (predicate) {
     if (!predicate)
         throw new Error("Argument cannot be null. Parameter name: predicate");
-    var result = [];
-    this.forEach(function (item, index) {
-        if (predicate(item, index))
-            result.push(item);
-    });
-    return result;
+    return _this.filter(predicate);
 };
